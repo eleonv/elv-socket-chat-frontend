@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ChatMessage } from '../models/chat-message.model';
@@ -8,11 +8,13 @@ import { ChatMessage } from '../models/chat-message.model';
 })
 export class WebSocketAlternativeService {
   private stompClient: Client | null = null;
-  private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
+  /*private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   public messages$ = this.messagesSubject.asObservable();
 
   private connectionStatusSubject = new BehaviorSubject<boolean>(false);
-  public connectionStatus$ = this.connectionStatusSubject.asObservable();
+  public connectionStatus$ = this.connectionStatusSubject.asObservable();*/
+  messages = signal<ChatMessage[]>([]);
+  connectionStatus = signal<boolean>(false);
 
   connect(username: string): void {
     this.stompClient = new Client({
@@ -29,13 +31,14 @@ export class WebSocketAlternativeService {
 
     this.stompClient.onConnect = (frame) => {
       console.log('Conectado: ' + frame);
-      this.connectionStatusSubject.next(true);
+      this.connectionStatus.set(true);
 
       // Suscribirse a los mensajes del chat
       this.stompClient!.subscribe('/topic/public', (message) => {
         const chatMessage: ChatMessage = JSON.parse(message.body);
-        const currentMessages = this.messagesSubject.value;
-        this.messagesSubject.next([...currentMessages, chatMessage]);
+        this.messages.update(msgs => [...msgs, chatMessage]);
+        /*const currentMessages = this.messagesSubject.value;
+        this.messages.set([...currentMessages, chatMessage]);*/
       });
 
       // Enviar mensaje de unión al chat
@@ -53,7 +56,7 @@ export class WebSocketAlternativeService {
 
     this.stompClient.onDisconnect = () => {
       console.log('Desconectado');
-      this.connectionStatusSubject.next(false);
+      this.connectionStatus.set(false);
     };
 
     this.stompClient.activate();
@@ -62,7 +65,7 @@ export class WebSocketAlternativeService {
   disconnect(): void {
     if (this.stompClient) {
       this.stompClient.deactivate();
-      this.connectionStatusSubject.next(false);
+      this.connectionStatus.set(false);
     }
   }
 
@@ -91,6 +94,6 @@ export class WebSocketAlternativeService {
   }
 
   clearMessages(): void {
-    this.messagesSubject.next([]);
+    this.messages.set([]);
   }
 }

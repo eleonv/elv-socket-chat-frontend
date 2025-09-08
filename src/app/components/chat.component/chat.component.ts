@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, Signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ChatMessage, MessageType } from '../../models/chat-message.model';
@@ -16,34 +16,41 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   username: string = '';
   messageContent: string = '';
-  messages: ChatMessage[] = [];
-  isConnected: boolean = false;
+  /*messages: ChatMessage[] = [];
+  isConnected: boolean = false;*/
+  messages!: Signal<ChatMessage[]>;
+  isConnected!: Signal<boolean>;
 
-  private messagesSubscription!: Subscription;
-  private connectionSubscription!: Subscription;
+  //private messagesSubscription!: Subscription;
+  //private connectionSubscription!: Subscription;
 
   constructor(
     //private webSocketService: WebSocketService,
     private webSocketService: WebSocketAlternativeService
-  ) { }
+  ) {
+    this.messages = this.webSocketService.messages;
+    this.isConnected = this.webSocketService.connectionStatus;
+  }
 
   ngOnInit(): void {
-    this.messagesSubscription = this.webSocketService.messages$.subscribe(
+    /*this.messagesSubscription = this.webSocketService.messages$.subscribe(
       messages => this.messages = messages
     );
 
     this.connectionSubscription = this.webSocketService.connectionStatus$.subscribe(
       status => this.isConnected = status
-    );
+    );*/
+    /*this.messages = this.webSocketService.messages;
+    this.isConnected = this.webSocketService.connectionStatus;*/
   }
 
   ngOnDestroy(): void {
-    if (this.messagesSubscription) {
+    /*if (this.messagesSubscription) {
       this.messagesSubscription.unsubscribe();
     }
     if (this.connectionSubscription) {
       this.connectionSubscription.unsubscribe();
-    }
+    }*/
     this.webSocketService.disconnect();
   }
 

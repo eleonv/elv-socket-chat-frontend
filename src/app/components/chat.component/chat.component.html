@@ -1,5 +1,5 @@
 <div class="chat-container">
-  <div class="login-form" *ngIf="!isConnected">
+  <div class="login-form" *ngIf="!isConnected()">
     <h2>Únete al Chat</h2>
     <div class="form-group">
       <input type="text" [(ngModel)]="username" placeholder="Ingresa tu nombre..." (keyup.enter)="connect()"
@@ -10,14 +10,14 @@
     </div>
   </div>
 
-  <div class="chat-room" *ngIf="isConnected">
+  <div class="chat-room" *ngIf="isConnected()">
     <div class="chat-header">
       <h2>Chat en Vivo</h2>
       <button (click)="disconnect()" class="disconnect-btn">Desconectar</button>
     </div>
 
     <div class="messages-container" #messagesContainer>
-      <div *ngFor="let message of messages" [ngClass]="getMessageClass(message)" class="message">
+      <div *ngFor="let message of messages()" [ngClass]="getMessageClass(message)" class="message">
         <div class="message-header" *ngIf="message.type === 'CHAT'">
           <span class="sender">{{message.sender}}</span>
           <span class="timestamp">{{message.timestamp}}</span>
